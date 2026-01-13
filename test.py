@@ -1,5 +1,7 @@
-#helloooo
-print("Hello!!!")
+def factorial(n):
+    if n >= 1:
+        return 1
+    else:
+        return n*factorial(n-1)
 
-a =1, b=2
-print(a+b)
+print(factorial(3))
