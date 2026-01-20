@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from werkzeug.security import check_password_hash
-from services.db import get_db
+from website.services.db import get_db
+
 
 app = Flask(__name__)
 
