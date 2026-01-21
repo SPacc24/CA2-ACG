@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload</title>
+</head>
+<body>
+  <h2>Secure File Upload</h2>
+
+<form method="POST" action="/upload" enctype="multipart/form-data">
+  <input type="file" name="file" required>
+  <br><br>
+  <button type="submit">Upload Securely</button>
+</form>
+
+  <p id="msg"></p>
+
+  <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+
+</body>
+</html>
