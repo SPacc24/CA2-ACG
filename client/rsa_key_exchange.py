@@ -1,16 +1,14 @@
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import serialization, hashes
+from Cryptodome.PublicKey import RSA
+from Cryptodome.Cipher import PKCS1_OAEP
+import os
 
-def encrypt_aes_key(aes_key, public_key_path):
-    with open(public_key_path, "rb") as key_file:
-        # load server public key
-        public_key = serialization.load_pem_public_key(key_file.read())
-    # encrypt aes key using RSA-OAEP
-    return public_key.encrypt(
-        aes_key,
-        padding.OAEP(
-            mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None
-        )
-    )
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+KEYS_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "keys"))
+
+def encrypt_key(aes_key, server_pub):
+    pub_path = os.path.join(KEYS_DIR, server_pub)
+    with open(pub_path, "rb") as f:
+        pub = RSA.import_key(f.read())
+
+    cipher = PKCS1_OAEP.new(pub)
+    return cipher.encrypt(aes_key)
