@@ -70,7 +70,7 @@ def upload():
     )
 
     # 🔓 SERVER SIDE
-    print("AES key match:", aes_key == decrypted_aes_key)
+   # print("AES key match:", aes_key == decrypted_aes_key)
 
     decrypted_aes_key = decrypt_key(
         encrypted_aes_key,
