@@ -32,6 +32,13 @@ app.secret_key = "ca2-secret"
 UPLOAD_DIR = "storage/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+def get_uploaded_files():
+    files = []
+    for f in os.listdir(UPLOAD_DIR):
+        if f.endswith(".enc"):   # hide .sig automatically
+            files.append(f)
+    return files
+
 # ===============================
 # Routes
 # ===============================
@@ -57,55 +64,56 @@ def upload():
     if "user" not in session:
         return redirect("/")
 
-    if request.method == "GET":
-        return render_template("upload.html")
+    if request.method == "POST":
+        uploaded_file = request.files["file"]
+        file_bytes = uploaded_file.read()
 
-    file_bytes = request.files["file"].read()
-    aad = session["user"].encode()
+        # 🔐 CLIENT SIDE
+        aes_key, nonce, ciphertext = encrypt_gcm(
+            file_bytes,
+            aad=b"file-upload"
+        )
 
-    aes_key, nonce, ciphertext_with_tag = encrypt_gcm(
-        file_bytes,
-        aad
-    )
+        encrypted_aes_key = encrypt_aes_key(
+            aes_key,
+            "keys/server_public_key.pem"
+        )
 
-    encrypted_aes_key = encrypt_aes_key(
-        aes_key,
-        "keys/server_public_key.pem"
-    )
+        signature = sign_file(file_bytes, "keys/client_private_key.pem")
 
-    signature = sign_file(
-        file_bytes,
-        "keys/client_private_key.pem"
-    )
+        # 🔓 SERVER SIDE
+        decrypted_aes_key = decrypt_aes_key(
+            encrypted_aes_key,
+            "keys/server_private_key.pem"
+        )
 
+        plaintext = decrypt_gcm(
+            decrypted_aes_key,
+            nonce,
+            ciphertext,
+            aad=b"file-upload"
+        )
 
-    decrypted_aes_key = decrypt_aes_key(
-        encrypted_aes_key,
-        "keys/server_private_key.pem"
-    )
+        verify_file(
+            plaintext,
+            signature,
+            "keys/client_public_key.pem"
+        )
 
-    plaintext = decrypt_gcm(
-        decrypted_aes_key,
-        nonce,
-        ciphertext_with_tag,
-        aad
-    )
+        # 💾 Save encrypted file ONLY
+        enc_filename = uploaded_file.filename + ".enc"
+        with open(os.path.join(UPLOAD_DIR, enc_filename), "wb") as f:
+            f.write(ciphertext)
 
-    verify_file(
-        plaintext,
-        signature,
-        "keys/client_public_key.pem"
-    )
+        # (signature still exists internally but NOT listed)
+        with open(os.path.join(UPLOAD_DIR, enc_filename + ".sig"), "wb") as f:
+            f.write(signature)
 
+    # 🔁 ALWAYS show file list (GET or POST)
+    files = get_uploaded_files()
+    return render_template("upload.html", files=files)
 
-    # 💾 Store encrypted artefacts
-    with open("storage/uploads/file.enc", "wb") as f:
-        f.write(ciphertext_with_tag)
-
-    with open("storage/uploads/file.sig", "wb") as f:
-        f.write(signature)
-
-    return "✅ File uploaded, encrypted, and verified successfully"
+UPLOAD_FOLDER = "storage/uploads"
 
 @app.route("/files")
 def files():
