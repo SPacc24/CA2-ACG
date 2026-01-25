@@ -18,7 +18,7 @@ CA2-ACG/
 ├── app.py                          # Flask web application (main entry point)
 ├── client/                         # Client-side cryptographic operations
 │   ├── client_main.py             # CLI client for secure file upload
-│   ├── acg_gcm_encrypt.py         # AES-GCM encryption
+│   ├── aes_gcm_encrypt.py         # AES-GCM encryption
 │   ├── rsa_key_exchange.py        # RSA public key encryption
 │   ├── digital_signature.py       # Digital signature generation
 │   └── hash_utils.py              # Hashing utilities
@@ -35,7 +35,8 @@ CA2-ACG/
 │   │   └── db.py                  # User authentication database
 │   ├── templates/
 │   │   ├── login.html             # Login page
-│   │   └── upload.html            # File upload page
+│   │   ├── upload.html            # File upload page
+│   │   └── files.html             # Files listing page (admin)
 │   └── static/
 │       └── js/
 │           ├── login.js           # Login script
@@ -43,7 +44,10 @@ CA2-ACG/
 ├── storage/
 │   └── uploads/                   # Encrypted file storage
 │       ├── file.enc               # Encrypted file
-│       └── file.sig               # Digital signature
+│       ├── file.sig               # Digital signature
+│       ├── PGP.pptx.enc           # Example encrypted PPTX file
+│       ├── PGP.pptx.enc.sig       # Corresponding signature
+│       └── ...                    # Additional encrypted files
 └── README.md
 ```
 
@@ -83,6 +87,7 @@ python app.py
 Then navigate to `http://localhost:5000` and:
 1. Login with your credentials
 2. Upload a file - it will be encrypted client-side and verified server-side
+3. Admin users can access the files listing to view and download all uploaded files
 
 ### CLI Client (File Upload)
 Securely upload a file from command line:
@@ -128,6 +133,9 @@ python server/server_main.py
 | `/login` | POST | User authentication |
 | `/upload` | GET | Upload form |
 | `/upload` | POST | File upload and encryption |
+| `/files` | GET | Files listing |
+| `/files/download/<filename>` | GET | Download file |
+| `/logout` | GET | Logout |
 
 ## 📝 File Formats
 
