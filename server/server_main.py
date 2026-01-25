@@ -35,4 +35,12 @@ verify_file(plaintext, signature, client_pub)
 with open(os.path.join(STORAGE_DIR, "decrypted.txt"), "wb") as f:
     f.write(plaintext)
 
+filename = request.files["file"].filename
+
+with open(f"{UPLOAD_DIR}/{filename}.enc", "wb") as f:
+    f.write(ciphertext)
+
+with open(f"{UPLOAD_DIR}/{filename}.sig", "wb") as f:
+    f.write(signature)
+
 print("File decrypted and verified successfully.")

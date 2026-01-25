@@ -27,3 +27,12 @@ with open(os.path.join(STORAGE_DIR, "signature.bin"), "wb") as f:
     f.write(signature)
 
 print("File uploaded securely.")
+
+filename = request.files["file"].filename
+
+with open(f"{UPLOAD_DIR}/{filename}.enc", "wb") as f:
+    f.write(ciphertext)
+
+with open(f"{UPLOAD_DIR}/{filename}.sig", "wb") as f:
+    f.write(signature)
+

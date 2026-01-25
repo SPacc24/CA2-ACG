@@ -3,14 +3,14 @@
 
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-from hash import hash_file
+from server.hash_utils import hash_bytes,hash_file
 
-def verify_file(file_path, signature):
-    # Hash the received file using SHA-256
-    file_hash = hash_file(file_path)
+def verify_file(file_bytes, signature, client_public_key_path):
+    # Hash the file bytes
+    file_hash = hash_bytes(file_bytes)
 
     # Load client's public key
-    with open("client_public_key.pem", "rb") as key_file:
+    with open(client_public_key_path, "rb") as key_file:
         public_key = serialization.load_pem_public_key(
             key_file.read()
         )

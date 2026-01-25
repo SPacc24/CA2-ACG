@@ -20,17 +20,17 @@ def encrypt_gcm(data, aad):
     return key, nonce, ciphertext_with_tag
 
 # Example Usage
-secret_message = b"Standard CTR is good, but GCM is better!"
+""" secret_message = b"Standard CTR is good, but GCM is better!"
 header_data = b"User-ID-123" # AAD: Authenticated but not encrypted
 
 key, nonce, encrypted = encrypt_gcm(secret_message, header_data)
 
 print(f"Nonce (Hex): {nonce.hex()}")
-print(f"Encrypted (Hex): {encrypted.hex()}")
+print(f"Encrypted (Hex): {encrypted.hex()}") """
 
 #I think we can take this one out? - thoon
 #Decryption
-def decrypt_gcm(key, nonce, ciphertext_with_tag, aad):
+""" def decrypt_gcm(key, nonce, ciphertext_with_tag, aad):
     aesgcm = AESGCM(key)
     
     try:
@@ -47,4 +47,4 @@ def decrypt_gcm(key, nonce, ciphertext_with_tag, aad):
 # If we change just one letter in the header (AAD), GCM will detect it:
 wrong_header = b"User-ID-999" 
 result = decrypt_gcm(key, nonce, encrypted, wrong_header)
-print(result)
+print(result) """

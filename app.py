@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, session, url_for
+from flask import Flask, request, render_template, redirect, session, url_for, send_from_directory
 from website.services.db import verify_user
 
 # === CLIENT SIDE CRYPTO (simulated) ===
@@ -12,6 +12,11 @@ from server.aes_gcm_decrypt import decrypt_gcm
 from server.digital_signature import verify_file
 
 import os
+
+# ====== Users DB Init ===============
+from website.services.db import init_db
+
+init_db()
 
 # ===============================
 # Flask App Setup
@@ -56,49 +61,89 @@ def upload():
         return render_template("upload.html")
 
     file_bytes = request.files["file"].read()
+    aad = session["user"].encode()
 
-    # 🔐 CLIENT SIDE
-    aes_key, nonce, ciphertext, tag = encrypt_gcm(file_bytes)
+    aes_key, nonce, ciphertext_with_tag = encrypt_gcm(
+        file_bytes,
+        aad
+    )
 
     encrypted_aes_key = encrypt_aes_key(
-        aes_key,"server_public.pem")
-    
+        aes_key,
+        "keys/server_public_key.pem"
+    )
 
     signature = sign_file(
         file_bytes,
-        "keys/client_private.pem"
+        "keys/client_private_key.pem"
     )
 
-    # 🔓 SERVER SIDE
-   # print("AES key match:", aes_key == decrypted_aes_key)
 
     decrypted_aes_key = decrypt_aes_key(
         encrypted_aes_key,
-        "server_private.pem"
+        "keys/server_private_key.pem"
     )
 
     plaintext = decrypt_gcm(
         decrypted_aes_key,
         nonce,
-        ciphertext,
-        tag
+        ciphertext_with_tag,
+        aad
     )
 
     verify_file(
         plaintext,
         signature,
-        "keys/client_public.pem"
+        "keys/client_public_key.pem"
     )
+
 
     # 💾 Store encrypted artefacts
     with open("storage/uploads/file.enc", "wb") as f:
-        f.write(ciphertext)
+        f.write(ciphertext_with_tag)
 
     with open("storage/uploads/file.sig", "wb") as f:
         f.write(signature)
 
     return "✅ File uploaded, encrypted, and verified successfully"
 
+@app.route("/files")
+def files():
+    if "user" not in session:
+        return redirect("/")
+
+    # Only allow admin user
+    if session["user"] != "admin":
+        return "❌ Access denied", 403
+
+    files = os.listdir(UPLOAD_DIR)
+
+    file_info = []
+    for f in files:
+        path = os.path.join(UPLOAD_DIR, f)
+        file_info.append({
+            "name": f,
+            "size": os.path.getsize(path)
+        })
+
+    return render_template(
+        "files.html",
+        files=file_info
+    )
+
+@app.route("/files/download/<filename>")
+def download_file(filename):
+    if "user" not in session:
+        return redirect("/")
+
+    if session["user"] != "admin":
+        return "❌ Access denied", 403
+
+    return send_from_directory(
+        UPLOAD_DIR,
+        filename,
+        as_attachment=True
+    )
 
 @app.route("/logout")
 def logout():

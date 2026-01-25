@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Files</title>
+</head>
+<body>
+<h2>Uploaded Files (Admin)</h2>
+
+<table border="1">
+  <tr>
+    <th>Filename</th>
+    <th>Size (bytes)</th>
+    <th>Action</th>
+  </tr>
+
+  {% for file in files %}
+  <tr>
+    <td>{{ file.name }}</td>
+    <td>{{ file.size }}</td>
+    <td>
+      <a href="/files/download/{{ file.name }}">Download</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<br>
+<a href="/upload">Back to Upload</a> |
+<a href="/logout">Logout</a>
+
+
+</body>
+</html>
