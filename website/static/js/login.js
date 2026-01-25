@@ -14,6 +14,6 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
   document.getElementById("msg").innerText = data.message;
 
   if (data.success) {
-    window.location.href = "upload.html";
+    window.location.href = "./upload.html";
   }
 });
