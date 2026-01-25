@@ -28,6 +28,7 @@ key, nonce, encrypted = encrypt_gcm(secret_message, header_data)
 print(f"Nonce (Hex): {nonce.hex()}")
 print(f"Encrypted (Hex): {encrypted.hex()}")
 
+#I think we can take this one out? - thoon
 #Decryption
 def decrypt_gcm(key, nonce, ciphertext_with_tag, aad):
     aesgcm = AESGCM(key)
