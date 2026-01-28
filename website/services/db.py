@@ -63,12 +63,12 @@ def init_db():
     c.execute("""
     INSERT OR IGNORE INTO users (username, password_hash, role)
     VALUES (?, ?, ?)
-    """, ("user1", hash_password("user123"), "user"))
+    """, ("hehe", hash_password("yippe123"), "user"))
 
     c.execute("""
     INSERT OR IGNORE INTO users (username, password_hash, role)
     VALUES (?, ?, ?)
-    """, ("user2", hash_password("user123"), "user"))
+    """, ("acg", hash_password("wow123"), "user"))
 
     conn.commit()
     conn.close()

@@ -13,26 +13,35 @@
 
   <hr>
 
- <h2>Uploaded Files</h2>
+  <h2>Uploaded Files</h2>
 
-<table border="1">
-  <tr>
-    <th>Filename</th>
-    <th>Uploaded By</th>
-    <th>Action</th>
-  </tr>
+  <table border="1">
+    <tr>
+      <th>Filename</th>
+      <th>Uploaded By</th>
 
-  {% for file in files %}
-  <tr>
-    <td>{{ file["filename"] }}</td>
-    <td>{{ file["uploaded_by"] }}</td>
-    <td>
-      <a href="/files/download/{{ file['id'] }}">Download</a>
-    </td>
-  </tr>
-  {% endfor %}
-</table>
+      {% if session.role == "admin" %}
+        <th>Action</th>
+      {% endif %}
+    </tr>
 
+    {% for file in files %}
+    <tr>
+      <td>{{ file["filename"] }}</td>
+      <td>{{ file["uploaded_by"] }}</td>
+
+      {% if session.role == "admin" %}
+        <td>
+          <a href="/files/download/{{ file['id'] }}">Download</a>
+        </td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% if session.role != "admin" %}
+    <p>🔒 File download is restricted.</p>
+  {% endif %}
 
   <br>
   <a href="{{ url_for('logout') }}">Logout</a>
