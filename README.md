@@ -113,9 +113,9 @@ The following settings are configured in `app.py`:
 - **Database**: SQLite at `website/services/database.db` (auto-created on first run)
 
 Default credentials (initialized automatically):
-- Admin user: `admin` / `admin123`
-- User: `hehe` / `yippe123`
-- User: `acg` / `wow123`
+- Admin user: `admin` / `axxxxxxx`
+- User: `hehe` / `yxxxxxxx`
+- User: `acg` / `wxxxxx`
 
 ## References
 
