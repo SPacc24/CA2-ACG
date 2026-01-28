@@ -1,3 +1,4 @@
+from inspect import signature
 from flask import (
     Flask, request, render_template,
     redirect, session, url_for, send_file
@@ -91,6 +92,17 @@ def upload():
             "keys/client_private_key.pem"
         )
         signature = signature[0] if isinstance(signature, tuple) else signature
+
+        """
+        print("\n=== UPLOAD CRYPTO PIPELINE ===")
+        print("AES key (hex):", aes_key.hex())
+        print("Nonce:", nonce.hex())
+        print("Encrypted data (first 32 bytes):", encrypted_data[:32].hex())
+        print("Encrypted AES key (RSA, first 64 bytes):", encrypted_key[:64])
+        print("File hash:", file_hash.hex())
+        print("Digital signature (first 64 bytes):", signature[:64])
+        print("================================\n") 
+        """
         # ===============================
         # 💾 STORE ONLY ENCRYPTED DATA
         # ===============================
@@ -145,6 +157,9 @@ def download_file(file_id):
         file["encrypted_key"],
         "keys/server_private_key.pem"
     )
+    """
+    print("Decrypted AES key (hex):", aes_key.hex())
+    """
 
     plaintext = decrypt_gcm(
         aes_key,
@@ -160,6 +175,14 @@ def download_file(file_id):
     if recalculated_hash != file["file_hash"]:
         return "❌ Integrity check failed", 400
 
+    """
+    print("\n=== DOWNLOAD CRYPTO PIPELINE ===")
+    print("AES key decrypted successfully")
+    print("File decrypted")
+
+    print("Recalculated hash:", recalculated_hash.hex())
+    print("Stored hash:", file["file_hash"].hex())
+    """
     # ===============================
     # ✍️ DIGITAL SIGNATURE VERIFICATION
     # ===============================
@@ -168,6 +191,9 @@ def download_file(file_id):
         file["signature"],
         "keys/client_public_key.pem"
     )
+    
+    print("Digital signature verified successfully")
+    print("================================\n")
 
     # ===============================
     # 📤 SAFE FILE RELEASE

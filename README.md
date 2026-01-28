@@ -1,173 +1,125 @@
-# CA2-ACG: Secure File Transfer with Cryptography
+# CA2-ACG: Secure File Transfer System
 
-A comprehensive client-server application demonstrating practical implementation of modern cryptographic techniques for secure file transfer, authentication, and data integrity verification.
+A practical implementation of end-to-end encrypted file transfer with digital signatures, demonstrating real-world cryptographic security patterns.
 
-## 🔐 Features
+## Overview
 
-- **RSA Key Exchange**: Secure asymmetric encryption for AES key distribution
-- **AES-GCM Encryption**: Authenticated encryption for file confidentiality
-- **Digital Signatures**: ECDSA/RSA-based signatures for non-repudiation and authenticity
-- **Hash Utilities**: Cryptographic hashing for data integrity
-- **Web Interface**: Flask-based web application with user authentication
-- **Client-Server Architecture**: Dual implementations for CLI and web-based file uploads
+This project implements a complete secure file transfer system combining:
+- **AES-GCM** for encrypted file storage
+- **RSA** for secure key distribution
+- **Digital Signatures** for authenticity and non-repudiation
+- **SHA-256** for integrity verification
 
-## 📁 Project Structure
-
-```
-CA2-ACG/
-├── app.py                          # Flask web application (main entry point)
-├── client/                         # Client-side cryptographic operations
-│   ├── client_main.py             # CLI client for secure file upload
-│   ├── aes_gcm_encrypt.py         # AES-GCM encryption
-│   ├── rsa_key_exchange.py        # RSA public key encryption
-│   ├── digital_signature.py       # Digital signature generation
-│   └── hash_utils.py              # Hashing utilities
-├── server/                         # Server-side cryptographic operations
-│   ├── server_main.py             # CLI server for file processing
-│   ├── aes_gcm_decrypt.py         # AES-GCM decryption
-│   ├── server_rsa_key_exchange.py # RSA private key decryption
-│   ├── digital_signature.py       # Signature verification
-│   └── hash_utils.py              # Hashing utilities
-├── keys/                           # Cryptographic key generation
-│   └── keygen.py                  # RSA & ECDSA key generation script
-├── website/                        # Web interface
-│   ├── services/
-│   │   └── db.py                  # User authentication database
-│   ├── templates/
-│   │   ├── login.html             # Login page
-│   │   ├── upload.html            # File upload page
-│   │   └── files.html             # Files listing page (admin)
-│   └── static/
-│       └── js/
-│           ├── login.js           # Login script
-│           └── upload.js          # Upload script
-├── storage/
-│   └── uploads/                   # Encrypted file storage
-│       ├── file.enc               # Encrypted file
-│       ├── file.sig               # Digital signature
-│       ├── PGP.pptx.enc           # Example encrypted PPTX file
-│       ├── PGP.pptx.enc.sig       # Corresponding signature
-│       └── ...                    # Additional encrypted files
-└── README.md
-```
-
-## 🚀 Getting Started
+## Quick Start
 
 ### Prerequisites
 - Python 3.8+
-- Flask
-- Cryptography libraries (pycryptodome, cryptography)
+- Required packages: `flask`, `pycryptodome`, `cryptography`
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repo-url>
-   cd CA2-ACG
-   ```
-
-2. **Generate cryptographic keys**
-   ```bash
-   python keys/keygen.py
-   ```
-   This generates RSA and ECDSA key pairs for both client and server.
-
-3. **Install dependencies**
-   ```bash
-   pip install flask pycryptodome cryptography
-   ```
-
-## 💻 Usage
-
-### Web Application
-Start the Flask web server:
+Install dependencies:
 ```bash
+pip install flask pycryptodome cryptography
+```
+
+### Setup
+```bash
+# Generate cryptographic keys
+python keys/keygen.py
+
+# Run the web application
 python app.py
 ```
-Then navigate to `http://localhost:5000` and:
-1. Login with your credentials
-2. Upload a file - it will be encrypted client-side and verified server-side
-3. Admin users can access the files listing to view and download all uploaded files
 
-### CLI Client (File Upload)
-Securely upload a file from command line:
-```bash
-python client/client_main.py <path-to-file>
+Visit `http://localhost:5000` to access the web interface.
+
+## Project Structure
+
+```
+CA2-ACG/
+├── app.py                    # Flask web application
+├── README.md
+├── client/
+│   ├── aes_gcm_encrypt.py   # File encryption
+│   ├── rsa_key_exchange.py  # Key wrapping
+│   ├── digital_signature.py # Signature generation
+│   └── hash_utils.py        # Hashing
+├── server/
+│   ├── aes_gcm_decrypt.py   # File decryption
+│   ├── server_rsa_key_exchange.py # Key unwrapping
+│   ├── digital_signature.py # Signature verification
+│   └── hash_utils.py        # Hashing
+├── keys/
+│   └── keygen.py            # Create RSA/ECDSA keys
+└── website/
+    ├── services/
+    │   └── db.py            # Database & authentication
+    ├── templates/
+    │   ├── login.html
+    │   └── upload.html
+    └── static/
+        └── js/
+            ├── login.js
+            └── upload.js
 ```
 
-### CLI Server (File Decryption)
-Decrypt and verify uploaded files:
-```bash
-python server/server_main.py
-```
+## How It Works
 
-## 🔑 Cryptographic Operations
-
-### File Upload Flow
-
-1. **Client-Side Encryption**
-   - Generate random AES-256 key and nonce
-   - Encrypt file with AES-GCM (provides both confidentiality and authenticity)
-   - Encrypt AES key using server's RSA public key
-   - Sign file with client's private key
-
-2. **Server-Side Decryption**
+### File Upload
+1. User selects file in web UI
+2. **Client-side** (browser simulation):
+   - Generate random AES-256 key + nonce
+   - Encrypt file with AES-GCM
+   - Wrap AES key with server's RSA public key
+   - Sign with client's private key
+3. **Server-side**:
    - Decrypt AES key using server's private RSA key
    - Decrypt file using recovered AES key
-   - Verify digital signature using client's public key
-   - Store encrypted artifacts in storage/uploads/
+   - Verify signature with client's public key
+   - Store encrypted artifacts
 
-## 🛡️ Security Highlights
+### File Download
+1. Admin navigates to `/files`
+2. Server decrypts selected file
+3. Verifies integrity (hash) and authenticity (signature)
+4. File sent to client
 
-- **Confidentiality**: AES-256 GCM mode encryption
-- **Authenticity**: Digital signatures and GCM authentication tag
-- **Non-Repudiation**: RSA-based digital signatures
-- **Key Security**: RSA-encrypted key distribution
-- **Session Management**: Flask session-based authentication
+## Security Features
 
-## 📋 API Routes
+| Feature | Implementation |
+|---------|-----------------|
+| Confidentiality | AES-256-GCM encryption |
+| Integrity | AES-GCM authentication tag + SHA-256 hash |
+| Authenticity | RSA/ECDSA digital signatures |
+| Key Exchange | RSA encrypted key distribution |
+| Access Control | Session-based authentication & role-based access |
 
-| Route | Method | Description |
-|-------|--------|-------------|
+## API Routes
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
 | `/` | GET | Login page |
-| `/login` | POST | User authentication |
-| `/upload` | GET | Upload form |
-| `/upload` | POST | File upload and encryption |
-| `/files` | GET | Files listing |
-| `/files/download/<filename>` | GET | Download file |
-| `/logout` | GET | Logout |
+| `/login` | POST | Authenticate user |
+| `/upload` | GET/POST | Upload encrypted file |
+| `/files` | GET | View uploaded files (admin only) |
+| `/files/download/<id>` | GET | Download decrypted file (admin only) |
+| `/logout` | GET | End session |
 
-## 📝 File Formats
+## Configuration
 
-- **Encrypted Upload**: `nonce (16 bytes) + tag (16 bytes) + ciphertext`
-- **Encrypted Key**: RSA-encrypted AES key (variable length)
-- **Signature**: Digital signature of original plaintext
+The following settings are configured in `app.py`:
+- **Port**: `5000` (Flask default)
+- **Template Folder**: `website/templates/`
+- **Static Folder**: `website/static/`
+- **Database**: SQLite at `website/services/database.db` (auto-created on first run)
 
-## 🔧 Configuration
+Default credentials (initialized automatically):
+- Admin user: `admin` / `admin123`
+- User: `hehe` / `yippe123`
+- User: `acg` / `wow123`
 
-- **Flask Secret Key**: Set in `app.py` (change for production)
-- **Upload Directory**: `storage/uploads/`
-- **Key Directory**: `keys/`
-- **Port**: 5000 (default Flask)
+## References
 
-## ⚠️ Important Security Notes
-
-This project is designed for educational purposes. For production use:
-- Use environment variables for sensitive keys
-- Implement proper key management and rotation
-- Add HTTPS/TLS for transport security
-- Implement rate limiting and input validation
-- Use secure session management (e.g., Redis)
-- Add comprehensive logging and monitoring
-- Conduct security audits and penetration testing
-
-## 📚 References
-
-- [AES-GCM Documentation](https://en.wikipedia.org/wiki/Galois/Counter_Mode)
-- [RSA Cryptography](https://en.wikipedia.org/wiki/RSA_(cryptosystem))
+- [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode)
+- [RSA Encryption](https://en.wikipedia.org/wiki/RSA_(cryptosystem))
 - [Digital Signatures](https://en.wikipedia.org/wiki/Digital_signature)
-- [Flask Security Best Practices](https://flask.palletsprojects.com/en/2.0.x/security/)
-
-## 📄 License
-
-This project is provided for educational purposes.
+- [Flask Security](https://flask.palletsprojects.com/security/)
