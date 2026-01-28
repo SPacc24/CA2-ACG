@@ -27,24 +27,3 @@ key, nonce, encrypted = encrypt_gcm(secret_message, header_data)
 
 print(f"Nonce (Hex): {nonce.hex()}")
 print(f"Encrypted (Hex): {encrypted.hex()}") """
-
-#I think we can take this one out? - thoon
-#Decryption
-""" def decrypt_gcm(key, nonce, ciphertext_with_tag, aad):
-    aesgcm = AESGCM(key)
-    
-    try:
-        # The library automatically splits the last 16 bytes (the tag)
-        # and verifies the integrity before decrypting.
-        plaintext = aesgcm.decrypt(nonce, ciphertext_with_tag, aad)
-        return plaintext.decode('utf-8')
-    except InvalidTag:
-        # This happens if the Key, Nonce, Ciphertext, or AAD are wrong/tampered with
-        print("ALERT: Integrity check failed! The data has been altered or the key is wrong.")
-        return None
-
-# --- Testing the failure ---
-# If we change just one letter in the header (AAD), GCM will detect it:
-wrong_header = b"User-ID-999" 
-result = decrypt_gcm(key, nonce, encrypted, wrong_header)
-print(result) """

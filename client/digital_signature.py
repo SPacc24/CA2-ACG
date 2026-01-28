@@ -1,28 +1,43 @@
 # Member 3 - Client Side
-# This file signs a file using RSA digital signature
+# This file generates a digital signature for uploaded files
+# Digital signature ensures authenticity, integrity, and non-repudiation
 
-from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
-from client.hash_utils import hash_bytes, hash_file
+from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
+from cryptography.hazmat.primitives import hashes
+from client.hash_utils import hash_bytes
+
 
 def sign_file(file_bytes, private_key_path):
-    # Hash uploaded file bytes
-    file_hash = hash_bytes(file_bytes)
+    """
+    Signs the SHA-256 hash of a file using RSA private key.
+    """
 
+    # --------------------------------
+    # Step 1: Hash file (Integrity)
+    # --------------------------------
+    file_hash = hash_bytes(file_bytes)  # SHA-256 digest (bytes)
 
-    # Load client's private key
+    # --------------------------------
+    # Step 2: Load private key
+    # --------------------------------
     with open(private_key_path, "rb") as key_file:
         private_key = serialization.load_pem_private_key(
             key_file.read(),
             password=None
         )
 
-    # Sign the file hash using private key
+    # --------------------------------
+    # Step 3: Sign the hash
+    # --------------------------------
     signature = private_key.sign(
         file_hash,
         padding.PKCS1v15(),
-        hashes.SHA256()
+        Prehashed(hashes.SHA256())
     )
 
-    # Return the digital signature
-    return signature
+    # --------------------------------
+    # Step 4: Return signature + hash
+    # --------------------------------
+    return signature, file_hash
