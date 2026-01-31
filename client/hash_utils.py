@@ -22,10 +22,18 @@ def hash_file(file_path):
 from cryptography.hazmat.primitives import hashes
 
 def hash_bytes(data: bytes) -> bytes:
+    
+    print(f"\n--- SHA-256 Hashing (Client Side) ---")
+
     """Hash raw bytes using SHA-256"""
     digest = hashes.Hash(hashes.SHA256())
     digest.update(data)
-    return digest.finalize()
+    hashed_value = digest.finalize()
+
+    # Print the hash in a human-readable format
+    print(f"[LOG] File Hashed (SHA-256): {hashed_value.hex()}")
+
+    return hashed_value
 
 
 def hash_file(file_path: str) -> bytes:

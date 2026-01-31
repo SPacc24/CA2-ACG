@@ -4,26 +4,22 @@ from cryptography.exceptions import InvalidTag
 import os
 
 def encrypt_gcm(data, aad):
+    
+    print(f"\n--- AES-GCM Encryption (Client Side) ---")
+    
     # 1. Generate a random 256-bit key
-    # In a real app, you'd load this from a secure vault
     key = AESGCM.generate_key(bit_length=256)
     aesgcm = AESGCM(key)
     
     # 2. Generate a 96-bit (12-byte) Nonce
-    # This is the "starting point" for the internal counter
+    # This is the starting point for the internal counter
     nonce = os.urandom(12)
     
     # 3. Encrypt and Authenticate
     # The library handles the CTR incrementing and GMAC tag creation
     ciphertext_with_tag = aesgcm.encrypt(nonce, data, aad)
+
+    # ADDED LOG LINE:
+    print(f"[LOG] Cryptographic integrity check: File has been encrypted with AES-GCM (Nonce: {nonce.hex()[:8]}...)")
     
     return key, nonce, ciphertext_with_tag
-
-# Example Usage
-""" secret_message = b"Standard CTR is good, but GCM is better!"
-header_data = b"User-ID-123" # AAD: Authenticated but not encrypted
-
-key, nonce, encrypted = encrypt_gcm(secret_message, header_data)
-
-print(f"Nonce (Hex): {nonce.hex()}")
-print(f"Encrypted (Hex): {encrypted.hex()}") """

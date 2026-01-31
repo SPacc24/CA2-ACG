@@ -10,6 +10,9 @@ from client.hash_utils import hash_bytes
 
 
 def sign_file(file_bytes, private_key_path):
+
+    print(f"\n--- Digital Signature Generation (Client Side) ---")
+    
     """
     Signs the SHA-256 hash of a file using RSA private key.
     """
@@ -36,6 +39,9 @@ def sign_file(file_bytes, private_key_path):
         padding.PKCS1v15(),
         Prehashed(hashes.SHA256())
     )
+
+    # ADDED LOG LINE:
+    print(f"[LOG] Digital signature generated. Ready for AES-GCM encryption.")
 
     # --------------------------------
     # Step 4: Return signature + hash

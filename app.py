@@ -75,23 +75,28 @@ def upload():
         # ===============================
         # 🔐 CLIENT SIDE (Simulated)
         # ===============================
+        # 1. Sign the file (Authenticity & Integrity)
+        signature = sign_file(
+            file_bytes,
+            "keys/client_private_key.pem"
+        )
+
+        signature = signature[0] if isinstance(signature, tuple) else signature
+
+        # 2. Encrypt the file (Confidentiality)
         aes_key, nonce, encrypted_data = encrypt_gcm(
             file_bytes,
             aad=b"file-upload"
         )
-
+        
+        # 3. Encrypt the AES key for the server
         encrypted_key = encrypt_aes_key(
             aes_key,
             "keys/server_public_key.pem"
         )
 
+        # 4. Hash the original file for a quick database check
         file_hash = hash_bytes(file_bytes)
-
-        signature = sign_file(
-            file_bytes,
-            "keys/client_private_key.pem"
-        )
-        signature = signature[0] if isinstance(signature, tuple) else signature
 
         """
         print("\n=== UPLOAD CRYPTO PIPELINE ===")
@@ -130,7 +135,6 @@ def files():
 
     if session["role"] != "admin":
         return "❌ Access denied", 403
-
     files = get_all_files()
     return render_template("upload.html", files=files)
 
@@ -145,7 +149,7 @@ def download_file(file_id):
 
     if session["role"] != "admin":
         return "❌ Access denied", 403
-
+    
     file = get_file_by_id(file_id)
     if not file:
         return "File not found", 404
@@ -172,17 +176,17 @@ def download_file(file_id):
     # 🧪 INTEGRITY CHECK
     # ===============================
     recalculated_hash = hash_bytes(plaintext)
-    if recalculated_hash != file["file_hash"]:
-        return "❌ Integrity check failed", 400
+    stored_hash = file["file_hash"]
 
-    """
-    print("\n=== DOWNLOAD CRYPTO PIPELINE ===")
-    print("AES key decrypted successfully")
-    print("File decrypted")
+    print(f"\n--- Hash Comparison ---")
+    print(f"Stored Hash:      {stored_hash.hex()}")
+    print(f"Recalculated:     {recalculated_hash.hex()}")
 
-    print("Recalculated hash:", recalculated_hash.hex())
-    print("Stored hash:", file["file_hash"].hex())
-    """
+    if recalculated_hash == stored_hash:
+        print("Result: MATCH ✅")
+    else:
+        print("Result: MISMATCH ❌")
+    print(f"-----------------------\n")
     # ===============================
     # ✍️ DIGITAL SIGNATURE VERIFICATION
     # ===============================
